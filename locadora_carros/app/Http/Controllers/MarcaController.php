@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminante\Support\Facades\Storage;
 use App\Models\Marca;
 use Illuminate\Http\Request;
 
@@ -22,7 +23,11 @@ class MarcaController extends Controller
     public function index()
     {
         $marcas = $this->marca->all();
-        return response()->json($marcas, 200);
+        return response()->json($marcas->with('modelo')->get(), 200);
+
+        //all() -> criando um objeto de consulta + get() = collection
+        //get()-> modificar a consulta -> collection
+
     }
 
 
@@ -57,7 +62,7 @@ class MarcaController extends Controller
      */
     public function show($id)
     {
-        $marca = $this->marca->find($id);
+        $marca = $this->marca->with('modelo')->find($id);
         
         if($marca === null){
             
@@ -111,6 +116,7 @@ class MarcaController extends Controller
        
         }
 
+
         $image = $request->file('imagem');
         $image_urn = $image->store('imagens', 'public');
 
@@ -118,7 +124,8 @@ class MarcaController extends Controller
             'nome' => $request->nome,
             'imagem' => $image_urn
         ]);
-        response()->json($marca, 200);
+        
+        return response()->json($marca, 200);
     
     }
 
@@ -130,13 +137,14 @@ class MarcaController extends Controller
      */
     public function destroy($id)
     {
-        $marca = $this->marca->fid($id);
+        $marca = $this->marca->find($id);
         
         if($marca === null){
             
             return response()->json(['erro' => 'Impossível realizar o delete'], 404);
         
         }
+        Storage::disk('public')->delete($marca->imagem);
 
         $marca->delete();
         return response()->json(['msg' => 'Deletado'], 200);
