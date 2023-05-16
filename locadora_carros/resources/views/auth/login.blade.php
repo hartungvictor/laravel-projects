@@ -4,6 +4,6 @@
 
         
 
-    <login-component token_csrf="{{ @csrf_token() }}"></login-component>
+    <login-component csrf_token="{{ @csrf_token() }}"></login-component>
     
 @endsection
