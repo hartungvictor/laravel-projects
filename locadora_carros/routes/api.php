@@ -1,16 +1,7 @@
 <?php
 
-
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ClienteController;
-use App\Http\Controllers\CarroController;
-use App\Http\Controllers\LocacaoController;
-use App\Http\Controllers\ModeloController;
-use App\Http\Controllers\MarcaController;
-use App\Htpp\Controllers\AuthController;
-
 
 /*
 |--------------------------------------------------------------------------
@@ -27,20 +18,18 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-
-Route::prefix('v1')->middleware('jwt.auth')->group(function(){
-    Route::post('logout', [AuthController::class, 'logout'] );
-    Route::post('refresh', [AuthController::class, 'refresh']);
-    Route::post('me', [AuthController::class, 'me']);
-    
-   
-   
-    Route::apiResource('cliente', ClienteController::class);
-    Route::apiResource('carro', CarroController::class);
-    Route::apiResource('locacao', LocacaoController::class);
-    Route::apiResource('marca', MarcaController::class);
-    Route::apiResource('modelo', ModeloController::class);
+//Route::resource('cliente', 'App\Http\Controllers\ClienteController');
+Route::prefix('v1')->middleware('jwt.auth')->group(function() {
+    Route::post('me', 'App\Http\Controllers\AuthController@me');
+    Route::post('logout', 'App\Http\Controllers\AuthController@logout');
+    Route::post('refresh', 'App\Http\Controllers\AuthController@refresh');
+    Route::apiResource('cliente', 'App\Http\Controllers\ClienteController');
+    Route::apiResource('carro', 'App\Http\Controllers\CarroController');
+    Route::apiResource('locacao', 'App\Http\Controllers\LocacaoController');
+    Route::apiResource('marca', 'App\Http\Controllers\MarcaController');
+    Route::apiResource('modelo', 'App\Http\Controllers\ModeloController');
 });
 
-
 Route::post('login', 'App\Http\Controllers\AuthController@login');
+
+

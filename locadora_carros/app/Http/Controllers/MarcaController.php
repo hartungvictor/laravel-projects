@@ -22,34 +22,32 @@ class MarcaController extends Controller
 
         $marcaRepository = new MarcaRepository($this->marca);
 
-        $marcas = array();
-
         if($request->has('atributos_modelos')) {
-            $atributos_modelos = $request->atributos_modelos;
-            $marcaRepository->selectAtributosRegistroRelacionados($atributos_modelos);
+            $atributos_modelos = 'modelos:id,'.$request->atributos_modelos;
+            $marcaRepository->selectAtributosRegistrosRelacionados($atributos_modelos);
         } else {
-            $marcas = $this->marca->with('modelos');
-            $marcaRepository->selectAtributosRegistroRelacionados('modelos');
+            $marcaRepository->selectAtributosRegistrosRelacionados('modelos');
         }
-
 
         if($request->has('filtro')) {
-           $marcaRepository->filtro($request->filtro);
-
-            }
-        
-
-        if($request->has('atributos')) {
-            $atributos = $request->atributos;
-            $marcas = $marcas->selectRaw($atributos)->get();
-        } else {
-            $marcas = $marcas->get();
+            $marcaRepository->filtro($request->filtro);
         }
 
+        if($request->has('atributos')) {
+            $marcaRepository->selectAtributos($request->atributos);
+        } 
 
-        //$marcas = Marca::all();
-        //$marcas = $this->marca->with('modelos')->get();
-        return response()->json($marcas, 200);
+        return response()->json($marcaRepository->getResultado(), 200);
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        //
     }
 
     /**
@@ -89,6 +87,16 @@ class MarcaController extends Controller
         return response()->json($marca, 200);
     }
 
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  \App\Models\Marca  $marca
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(Marca $marca)
+    {
+        //
+    }
 
     /**
      * Update the specified resource in storage.

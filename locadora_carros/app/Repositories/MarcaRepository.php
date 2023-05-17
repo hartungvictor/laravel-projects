@@ -7,15 +7,3 @@ class MarcaRepository extends AbstractRepository {
 }
 
 ?>
-
-
-
-
-
-
-
-
-
-
-
-?>

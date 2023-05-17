@@ -42,7 +42,6 @@ class User extends Authenticatable implements JWTSubject
         'email_verified_at' => 'datetime',
     ];
 
-    
     // Rest omitted for brevity
 
     /**
@@ -64,5 +63,4 @@ class User extends Authenticatable implements JWTSubject
     {
         return [];
     }
-
 }
