@@ -45,6 +45,11 @@
 
 
         <modal-component id="modalMarca" titulo="Adicionar marca">
+            <template v-slot:alertas>
+                <alert-component tipo="success" :detalhes="detalhes" titulo="Cadastro realizado com sucesso" v-if="status == 'adicionado'"></alert-component>
+                <alert-component tipo="danger" :detalhes="detalhes" titulo="Erro ao cadastrar" v-if="status == 'erro'"></alert-component>
+            </template>
+
             <template v-slot:conteudo>
                 <div class="form-group">
                     <input-container-component titulo="Nome da marca" id="novoNome" id-help="novoNomeHelp" texto-ajuda="Informe o nome da marca">
@@ -66,21 +71,55 @@
                 <button type="button" class="btn btn-primary" @click="salvar()">Salvar</button>
             </template>
         </modal-component>
-
-
     </div>
 </template>
 
 <script>
     export default {
+        computed: {
+            token() {
+
+                let token = document.cookie.split(';').find(indice => {
+                    return indice.includes('token=')
+                })
+
+                token = token.split('=')[1]
+                token = 'Bearer ' + token
+
+                return token
+            }
+        },
+      
         data() {
             return {
                 urlBase: 'http://localhost:8000/api/v1/marca',
                 nomeMarca: '',
-                arquivoImagem: []
+                arquivoImagem: [],
+                status: '',
+                detalhes: {},
+                marcas: []
             }
         },
         methods: {
+            carregarLista() {
+                let config = {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': this.token
+                    }
+                }
+                axios.get(this.urlBase,config)
+                    .then(response => {
+                        this.marcas = response.data
+                        console.log(response)
+                    })
+                    .catch(errors => {
+
+                        console.log(errors)
+
+                    })
+                    
+                },  
             carregarImagem(e) {
                 this.arquivoImagem = e.target.files
             },
@@ -94,18 +133,31 @@
                 let config = {
                     headers: {
                         'Content-Type': 'multipart/form-data',
-                        'Accept': 'application/json'
+                        'Accept': 'application/json',
+                        'Authorization': this.token
                     }
                 }
 
                 axios.post(this.urlBase, formData, config)
                     .then(response => {
+                        this.status = 'adicionado'
+                        this.detalhes = {
+                            mensagem: 'ID do registro: '+ response.data.id
+                        }
                         console.log(response)
                     })
                     .catch(errors => {
-                        console.log(errors)
+                        this.status = 'erro'
+                        this.detalhes = {
+                            mensagem: errors.response.data.message,
+                            dados: errors.response.data.errors
+                        }
+                        //console.log(errors)
                     })
             }
+        },
+        mounted() {
+            this.carregarLista()
         }
     }
 </script>
