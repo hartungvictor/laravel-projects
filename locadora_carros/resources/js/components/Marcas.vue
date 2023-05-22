@@ -153,6 +153,8 @@
         <modal-component id="modalMarcaAtualizar" titulo="Atualizar marca">
 
             <template v-slot:alertas>
+                <alert-component tipo="success" titulo="Transação realizada com sucesso" :detalhes="$store.state.transacao" v-if="$store.state.transacao.status == 'sucesso'"></alert-component>
+                <alert-component tipo="danger" titulo="Erro na transação" :detalhes="$store.state.transacao" v-if="$store.state.transacao.status == 'erro'"></alert-component>
             </template>
 
             <template v-slot:conteudo>
@@ -167,8 +169,6 @@
                         <input type="file" class="form-control-file" id="atualizarImagem" aria-describedby="atualizarImagemHelp" placeholder="Selecione uma imagem" @change="carregarImagem($event)">
                     </input-container-component>
                 </div>
-
-                {{$store.state.item}}
             </template>
 
             <template v-slot:rodape>
@@ -176,7 +176,7 @@
                 <button type="button" class="btn btn-primary" @click="atualizar()">Atualizar</button>
             </template>
         </modal-component>
-        <!-- fim do modal de inclusão de marca -->
+        <!-- fim do modal de atualização de marca -->
     </div>
 </template>
 
@@ -184,19 +184,6 @@
 import Paginate from './Paginate.vue'
     export default {
   components: { Paginate },
-        computed: {
-            token() {
-
-                let token = document.cookie.split(';').find(indice => {
-                    return indice.includes('token=')
-                })
-
-                token = token.split('=')[1]
-                token = 'Bearer ' + token
-
-                return token
-            }
-        },
         data() {
             return {
                 urlBase: 'http://localhost:8000/api/v1/marca',
@@ -216,26 +203,33 @@ import Paginate from './Paginate.vue'
                 let formData = new FormData();
                 formData.append('_method', 'patch')
                 formData.append('nome', this.$store.state.item.nome)
-                if(this.arquivoImagem[0]){
+
+                if(this.arquivoImagem[0]) {
                     formData.append('imagem', this.arquivoImagem[0])
                 }
+
                 let url = this.urlBase + '/' + this.$store.state.item.id
 
                 let config = {
                     headers: {
                         'Content-Type': 'multipart/form-data',
-                        'Accept': 'application/json',
-                        'Authorization': this.token
+                      
                     }
                 }
 
                 axios.post(url, formData, config)
                     .then(response => {
-                        console.log('Atualizado', response)
+                        this.$store.state.transacao.status = 'sucesso'
+                        this.$store.state.transacao.mensagem = 'Registro de marca atualizado com sucesso!'
+
+                        //limpar o campo de seleção de arquivos
+                        atualizarImagem.value = ''
                         this.carregarLista()
                     })
                     .catch(errors => {
-                        console.log('Erro de atualização', errors.response)
+                        this.$store.state.transacao.status = 'erro'
+                        this.$store.state.transacao.mensagem = errors.response.data.message
+                        this.$store.state.transacao.dados = errors.response.data.errors
                     })
             },
             remover() {
@@ -248,16 +242,11 @@ import Paginate from './Paginate.vue'
                 let formData = new FormData();
                 formData.append('_method', 'delete')
 
-                let config = {
-                    headers: {
-                        'Accept': 'application/json',
-                        'Autorization': this.token
-                    }
-                }
+         
 
                 let url = this.urlBase + '/' + this.$store.state.item.id
 
-                axios.post(url, formData, config)
+                axios.post(url, formData)
                     .then(response => {
                         this.$store.state.transacao.status = 'sucesso'
                         this.$store.state.transacao.mensagem = response.data.msg
@@ -303,16 +292,10 @@ import Paginate from './Paginate.vue'
             },
             carregarLista() {
 
-                let config = {
-                    headers: {
-                        'Accept': 'application/json',
-                        'Authorization': this.token
-                    }
-                }
 
                 let url = this.urlBase + '?' + this.urlPaginacao + this.urlFiltro
                 console.log(url)
-                axios.get(url, config)
+                axios.get(url)
                     .then(response => {
                         this.marcas = response.data
                         //console.log(this.marcas)
@@ -333,9 +316,7 @@ import Paginate from './Paginate.vue'
 
                 let config = {
                     headers: {
-                        'Content-Type': 'multipart/form-data',
-                        'Accept': 'application/json',
-                        'Authorization': this.token
+                        'Content-Type': 'multipart/form-data'                 
                     }
                 }
 

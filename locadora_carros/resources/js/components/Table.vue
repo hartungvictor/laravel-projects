@@ -12,7 +12,7 @@
                     <td v-for="valor, chaveValor in obj" :key="chaveValor">
                         <span v-if="titulos[chaveValor].tipo == 'texto'">{{valor}}</span>
                         <span v-if="titulos[chaveValor].tipo == 'data'">
-                            {{ '...'+valor}}
+                            {{ valor | formataDataTempoGlobal }}
                         </span>
                         <span v-if="titulos[chaveValor].tipo == 'imagem'">
                             <img :src="'/storage/'+valor" width="30" height="30">
@@ -36,6 +36,7 @@
             setStore(obj) {
                 this.$store.state.transacao.status = ''
                 this.$store.state.transacao.mensagem = ''
+                this.$store.state.transacao.dados = ''
                 this.$store.state.item = obj
             }
         },
